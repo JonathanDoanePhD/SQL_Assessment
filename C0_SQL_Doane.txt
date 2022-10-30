@@ -1,0 +1,54 @@
+-- QUESTION
+
+-- NPPES Dataset
+-- The US Department of Health and Human Services maintains the NPPES (National Plan and
+-- Provider Enumeration System) dataset which maps providers by NPI (National Provider
+-- Identifier) to Taxonomy Codes (Up to 15).
+-- The data is published for public use in BigQuery:
+-- https://console.cloud.google.com/marketplace/product/hhs/nppes
+-- Specifically for this exercise you will want to use the following tables:
+-- `bigquery-public-data.nppes.npi_optimized`
+-- `bigquery-public-data.nppes.healthcare_provider_taxonomy_code_set`
+
+-- C. What percentage of Colorado providers are “Individual” entities?
+
+
+-- .....................................................................................
+
+
+WITH co_providers AS -- let's reuse our work from question A
+(
+  SELECT * 
+  FROM bigquery-public-data.nppes.npi_optimized
+  WHERE 
+  (
+    REPLACE(
+      REPLACE(
+        LOWER(provider_business_practice_location_address_state_name),
+      ' ', ''),
+    '.', '') 
+    IN ('co', 'colorado')
+    OR
+    REPLACE(
+       REPLACE(
+        LOWER(provider_business_practice_location_address_state_name_name),
+      ' ', ''),
+    '.', '')  IN ('co', 'colorado')
+  )
+)
+
+SELECT entity_type_code_name AS et, COUNT(npi) AS num_providers
+FROM co_providers
+GROUP BY et
+ORDER BY num_providers DESC
+
+
+-- .....................................................................................
+
+
+-- SOLUTION
+
+-- et................num_providers
+-- Individual   with 90797
+-- Organization with 23896
+-- 90797/(90797+23896) approx 0.7916524984 or 79.17%

@@ -1,0 +1,58 @@
+-- QUESTION
+
+-- NPPES Dataset
+-- The US Department of Health and Human Services maintains the NPPES (National Plan and
+-- Provider Enumeration System) dataset which maps providers by NPI (National Provider
+-- Identifier) to Taxonomy Codes (Up to 15).
+-- The data is published for public use in BigQuery:
+-- https://console.cloud.google.com/marketplace/product/hhs/nppes
+-- Specifically for this exercise you will want to use the following tables:
+-- `bigquery-public-data.nppes.npi_optimized`
+-- `bigquery-public-data.nppes.healthcare_provider_taxonomy_code_set`
+
+-- B. Within the state of Colorado which 5 postal codes have the most providers (use 5 digit
+-- postal code)?
+
+
+-- .....................................................................................
+
+
+WITH co_providers AS -- let's reuse our work from question A
+(
+  SELECT * 
+  FROM bigquery-public-data.nppes.npi_optimized
+  WHERE 
+  (
+    REPLACE(
+      REPLACE(
+        LOWER(provider_business_practice_location_address_state_name),
+      ' ', ''),
+    '.', '') 
+    IN ('co', 'colorado')
+    OR
+    REPLACE(
+       REPLACE(
+        LOWER(provider_business_practice_location_address_state_name_name),
+      ' ', ''),
+    '.', '')  IN ('co', 'colorado')
+  )
+)
+
+SELECT LEFT(provider_business_practice_location_address_postal_code,5) AS pc, COUNT(npi) AS num_providers
+-- LEFT allows us to ignore the 12345-XXXX part of a postal code, resulting in 12345.
+FROM co_providers
+GROUP BY pc
+ORDER BY num_providers DESC
+
+
+-- .....................................................................................
+
+
+-- SOLUTION
+
+-- pc.........num_providers
+-- 80045 with 5485
+-- 80014 with 2636
+-- 80304 with 2066
+-- 80111 with 2018
+-- 80404 with 1897

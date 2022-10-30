@@ -1,0 +1,23 @@
+NOTES 'Diagnostic Radiologist' is '2085R0202X'
+
+(There could be mispellings, mislabelings.)
+
+A provider may switch specializations into (or from) DR.
+A practice may be in Colorado with headquarters (billing address) in another state.
+A provider may have lost a license (and regained it).
+
+ORGANIZATION AS A PROVIDER MAY HAVE ONE EMPLOYEE OR THOUSANDS OF EMPLOYEES.
+As such, we will get a lower bound by counting an organization by 1.
+WAIT, maybe an employee at an organization has an npi; so let's only count individuals.
+https://www.cms.gov/Outreach-and-Education/Medicare-Learning-Network-MLN/MLNProducts/downloads/NPI-What-You-Need-To-Know.pdf
+
+WITH state AS
+(
+	REPLACE(
+		REPLACE(
+			LOWER(provider_business_practice_location_address_state_name),
+		'.', ''),
+	' ', '')
+)
+
+

@@ -1,0 +1,69 @@
+-- QUESTION
+
+-- NPPES Dataset
+-- The US Department of Health and Human Services maintains the NPPES (National Plan and
+-- Provider Enumeration System) dataset which maps providers by NPI (National Provider
+-- Identifier) to Taxonomy Codes (Up to 15).
+-- The data is published for public use in BigQuery:
+-- https://console.cloud.google.com/marketplace/product/hhs/nppes
+-- Specifically for this exercise you will want to use the following tables:
+-- `bigquery-public-data.nppes.npi_optimized`
+-- `bigquery-public-data.nppes.healthcare_provider_taxonomy_code_set`
+
+-- A. How many providers are there in the state of Colorado specializing in “Diagnostic
+--    Radiology”?
+
+
+-- .....................................................................................
+
+
+WITH co_providers AS
+(
+  SELECT * 
+  FROM bigquery-public-data.nppes.npi_optimized
+  WHERE 
+  ( -- we use REPLACE to compensate for potential spelling errors or mislabelings
+    REPLACE(
+      REPLACE(
+        LOWER(provider_business_practice_location_address_state_name),
+      ' ', ''),
+    '.', '') 
+    IN ('co', 'colorado')
+    OR
+    REPLACE(
+       REPLACE(
+        LOWER(provider_business_practice_location_address_state_name_name),
+      ' ', ''),
+    '.', '')  IN ('co', 'colorado')
+  )
+),
+solution AS -- this is an approximate solution which we will refine
+(
+  SELECT *
+  FROM co_providers
+  WHERE
+  (
+    REGEXP_CONTAINS(LOWER(TO_JSON_STRING(co_providers)), '2085r0202x')
+    OR 
+    REGEXP_CONTAINS(LOWER(TO_JSON_STRING(co_providers)), 'diagnostic radiologist')
+  )
+),
+solution_active AS -- we make sure the provider is active
+(
+  SELECT *
+  FROM solution
+  WHERE (npi_deactivation_date IS NULL) OR (npi_reactivation_date IS NOT NULL)
+)
+
+SELECT *
+FROM solution_active
+WHERE LOWER(entity_type_code_name) = 'individual' -- organizations may have thousands of individual providers...
+-- conversely, organizations with a separate npi from one of their providers may cause a double count
+
+
+-- .....................................................................................
+
+
+-- SOLUTION
+
+-- there are at least 720 providers!
