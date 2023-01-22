@@ -1,3 +1,3 @@
 # SQL_Assessment
  
-Perform queries to address open-ended questions.
+Perform SQL queries to answer open-ended questions in the healthcare field.
